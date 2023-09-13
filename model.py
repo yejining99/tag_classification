@@ -3,10 +3,10 @@ import torch.nn as nn
 import loralib as lora
 
 class ContrastiveModel(nn.Module):
-    def __init__(self, LLM, tokenizer, use_lora=True, max_length=512, K=None, lora_layer=None, finetunning=False):  # Default value for lora_layer set to None
+    def __init__(self, LLM, tokenizer, use_lora=True, max_length=512, K=None, lora_layer=None, finetuning=False):  # Default value for lora_layer set to None
         super(ContrastiveModel, self).__init__()
         self.LLM = LLM
-        if finetunning == False:
+        if finetuning == False:
             for param in self.LLM.parameters():
                 param.requires_grad = False
         self.tokenizer = tokenizer 

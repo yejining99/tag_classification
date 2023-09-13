@@ -48,7 +48,7 @@ if __name__ == "__main__":
     batch_size = args.batch_size
     use_lora = args.use_lora
     lora_layer = args.lora_layer
-    finetunning = args.finetuning
+    finetuning = args.finetuning
     K = args.K
     epochs = args.epochs
     topk = args.topk
@@ -96,10 +96,10 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
     ################## 2. Training ##################
-    print(f"Starting training for LLM_name: {LLM_name}, use_lora: {use_lora}, LoRA layer: {lora_layer}, K: {K}, finetunning: {finetunning}, epochs: {epochs}")
+    print(f"Starting training for LLM_name: {LLM_name}, use_lora: {use_lora}, LoRA layer: {lora_layer}, K: {K}, finetuning: {finetuning}, epochs: {epochs}")
 
     # 모델 초기화
-    model = ContrastiveModel(LLM, tokenizer, use_lora=use_lora, max_length=max_length, K=K, lora_layer=lora_layer, finetunning=finetunning)
+    model = ContrastiveModel(LLM, tokenizer, use_lora=use_lora, max_length=max_length, K=K, lora_layer=lora_layer, finetuning=finetuning)
     model.to(device)
 
     # recall을 기준으로 모델 고르기
@@ -240,7 +240,7 @@ if __name__ == "__main__":
             'validation_ndcg': total_ndcg_list}
 
 
-        with open(result_dir+'/use_lora: {use_lora}, finetunning: {finetunning}.pkl'.format(use_lora=use_lora, finetunning=finetunning), 'wb') as f:
+        with open(result_dir+'/use_lora: {use_lora}, finetuning: {finetuning}.pkl'.format(use_lora=use_lora, finetuning=finetuning), 'wb') as f:
                 pickle.dump(experiment_results, f)
 
         print(f"Experiment results saved..")
