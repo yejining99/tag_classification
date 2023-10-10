@@ -13,9 +13,8 @@ class ContrastiveLoss(nn.Module):
         loss = torch.mean((1-label) * torch.pow(distance, 2) + label * torch.pow(torch.clamp(self.margin - distance, min=0.0), 2))
         return loss
     
-    def distance(self, text_embedding, keyword_embedding):
-        distance = self.distance(text_embedding, keyword_embedding)
-        return distance
+def euclidean_distance(x, y):
+    return torch.norm(x-y, dim=1, p=2)
     
 def loss_and_distance(loss_name, distance):
     ### distance function
@@ -24,7 +23,7 @@ def loss_and_distance(loss_name, distance):
     elif distance == "cosine_similarity":
         distance = F.cosine_similarity
     elif distance == "euclidean_distance":
-        distance = F.euclidean_distance
+        distance = euclidean_distance
     else:
         raise ValueError("distance must be one of 'pairwise_distance', 'cosine_similarity', 'euclidean_distance'")
     

@@ -6,9 +6,18 @@ class ContrastiveModel(nn.Module):
     def __init__(self, LLM, tokenizer, use_lora=True, max_length=512, K=None, lora_layer=None, finetuning=False):  # Default value for lora_layer set to None
         super(ContrastiveModel, self).__init__()
         self.LLM = LLM
-        if finetuning == False:
+        if finetuning == False: # If we're not finetuning, freeze the weights
             for param in self.LLM.parameters():
                 param.requires_grad = False
+    
+        else: # If we're finetuning, freeze the first 3 layers
+            for i, layer in enumerate(self.LLM.encoder.layer):
+                if i < 20:
+                    for param in layer.parameters():
+                        param.requires_grad = False
+                else:
+                    break
+
         self.tokenizer = tokenizer 
         self.max_length = max_length
         self.use_lora = use_lora
@@ -36,3 +45,13 @@ class ContrastiveModel(nn.Module):
             keyword_embedding = self.lora(keyword_embedding)
 
         return text_embedding, keyword_embedding
+    
+    def summary(self):
+        total_params = sum(p.numel() for p in self.parameters())
+        trainable_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
+        non_trainable_params = total_params - trainable_params
+
+        print(f"Total Parameters: {total_params}")
+        print(f"Trainable Parameters: {trainable_params}")
+        print(f"Non-trainable Parameters: {non_trainable_params}")
+        

@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 
 class CustomDataset(Dataset):
     def __init__(self, dataframe, tokenizer, unique_list, max_length, device):
+        # title과 body 합치기
         self.text = dataframe['title'] + " " + dataframe['body']
         self.index = dataframe['index']
         self.len = len(self.text)
@@ -39,3 +40,4 @@ class CustomDataset(Dataset):
 
     def generate_negative_samples(self, keyword, unique_list):
         return np.random.choice(list(set(unique_list) - set(keyword)), 1)[0]
+ 
