@@ -9,7 +9,7 @@ This code provides an implementation of training a contrastive model using a Lan
 - loss.py : Contains the loss and distance function used for training.
 - evaluation.py : Contains various evaluation metrics used to gauge the performance of the model on validation or test data. Function like recall_at_k, precision_at_k, NDCG_at_k etc.
 
-## Useage
+## Usage
 1. Using LoRA without Fine-tuning:
 If you want to train the model with LoRA (Layer-wise Relevance Analysis) but without fine-tuning the base LLM (Language Model), you can use the following command
 ```ruby
