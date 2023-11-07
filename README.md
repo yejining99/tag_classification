@@ -1,6 +1,8 @@
 # tag_classification
 This code provides an implementation of training a contrastive model using a Language Model (LM) with a LoRA (Local Representational Adaptation) layer. The main objective is to retrieve tag keywords from given texts by training the model. The user can choose to employ the LoRA technique to enhance performance.
 
+* The task was conducted as an industry-academic project at Hugraph.
+
 ## Description
 - main.py : This is the primary script for the entire workflow. It orchestrates data loading, model initialization, training, and evaluation processes.
 - dataloader.py : Contains functions and classes related to loading and preprocessing data.
