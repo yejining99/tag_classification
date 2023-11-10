@@ -46,6 +46,14 @@ class ContrastiveModel(nn.Module):
 
         return text_embedding, keyword_embedding
     
+    def embedding(self, text_tokens):
+        outputs = self.LLM(input_ids=text_tokens["input_ids"], attention_mask=text_tokens["attention_mask"])
+        text_embedding = outputs.hidden_states[self.lora_layer].mean(dim=1)
+        if self.use_lora:
+            text_embedding = self.lora(text_embedding)
+        return text_embedding
+    
+    
     def summary(self):
         total_params = sum(p.numel() for p in self.parameters())
         trainable_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
