@@ -1,7 +1,7 @@
 import numpy as np
 
 def recall_at_k(ranked_keywords, pos_keywords, k):
-    return len(set(ranked_keywords) & set(pos_keywords)) / len(pos_keywords)
+    return len(set(ranked_keywords[:k]) & set(pos_keywords)) / len(pos_keywords)
 
 def precision_at_k(ranked_keywords, pos_keywords, k):
     return len(set(ranked_keywords[:k]) & set(pos_keywords)) / k
