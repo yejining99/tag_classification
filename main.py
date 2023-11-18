@@ -29,9 +29,9 @@ def parse_args():
 
     parser.add_argument("--max_length", default=512, type=int, help="Maximum token length")
     parser.add_argument("--batch_size", default=64, type=int, help="Training batch size")
-    parser.add_argument("--use_lora", default=True, type=lambda x: (str(x).lower() == 'true'), help="Whether to use LoRA")
+    parser.add_argument("--use_lora", default=False, type=lambda x: (str(x).lower() == 'true'), help="Whether to use LoRA")
     parser.add_argument("--lora_layer", default=None, type=str, help="LoRA layer")
-    parser.add_argument("--finetuning", default=False, type=lambda x: (str(x).lower() == 'true'), help="Fine-tune LLM parameters")
+    parser.add_argument("--finetuning", default=True, type=lambda x: (str(x).lower() == 'true'), help="Fine-tune LLM parameters")
     parser.add_argument("--K", default=16, type=int, help="Rank K for adaptation")
     parser.add_argument("--epochs", default=2, type=int, help="Number of training epochs")
     parser.add_argument("--lr", default=1e-5, type=float, help="Learning rate")
