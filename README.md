@@ -1,7 +1,7 @@
 # tag_classification
-This code provides an implementation of training a contrastive model using a Language Model (LM). The main objective is to retrieve tag keywords from given texts by training the model. The user can choose the bert model that want to use.
+This code provides an implementation of training a contrastive model using a Language Model (LM). The main objective is to retrieve tag keywords from given texts by training the model. The user can choose the bert model that want to use.
 
-* The task was conducted as an industry-academic project at Hugraph.*
+* The task was conducted as an industry-academic project at Hugraph.
 
 ## Description
 - main.py : This is the primary script for the entire workflow. It orchestrates data loading, model initialization, training, and evaluation processes.
