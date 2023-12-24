@@ -28,13 +28,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Training a Contrastive Model")
 
     parser.add_argument("--max_length", default=512, type=int, help="Maximum token length")
-    parser.add_argument("--batch_size", default=64, type=int, help="Training batch size")
+    parser.add_argument("--batch_size", default=8, type=int, help="Training batch size")
     parser.add_argument("--use_lora", default=False, type=lambda x: (str(x).lower() == 'true'), help="Whether to use LoRA")
     parser.add_argument("--lora_layer", default=None, type=str, help="LoRA layer")
     parser.add_argument("--finetuning", default=True, type=lambda x: (str(x).lower() == 'true'), help="Fine-tune LLM parameters")
     parser.add_argument("--K", default=16, type=int, help="Rank K for adaptation")
-    parser.add_argument("--epochs", default=2, type=int, help="Number of training epochs")
-    parser.add_argument("--lr", default=1e-5, type=float, help="Learning rate")
+    parser.add_argument("--epochs", default=4, type=int, help="Number of training epochs")
+    parser.add_argument("--lr", default=5e-5, type=float, help="Learning rate")
     parser.add_argument("--topk", default=10, type=int, help="Value for Recall@k")
     parser.add_argument("--LLM_name", default="bert-multilingual", type=str, help="Name of the LLM")
     parser.add_argument("--loss", default="contrastive", type=str, help="Loss function to use")
@@ -42,6 +42,8 @@ def parse_args():
     parser.add_argument("--device", default="cuda:0", type=str, help="Device to run the model on. E.g., 'cuda:1' or 'cpu'")
     parser.add_argument("--save_dir", default="saved_models", type=str, help="Directory to save the model")
     parser.add_argument("--result_dir", default="results", type=str, help="Directory to save the results")
+    parser.add_argument("--embed_dir", default="embeddings", type=str, help="Directory to save the embeddings")
+    parser.add_argument("--freeze_layers", default=3, type=int, help="Number of first n layers to freeze")
     args = parser.parse_args()
     return args
 
@@ -67,8 +69,10 @@ if __name__ == "__main__":
     
     save_dir = args.save_dir
     result_dir = args.result_dir
+    embed_dir = args.embed_dir
     os.makedirs(save_dir, exist_ok=True)
     os.makedirs(result_dir, exist_ok=True)
+    os.makedirs(embed_dir, exist_ok=True)
     
     device = torch.device(args.device if torch.cuda.is_available() and "cuda" in args.device else "cpu")
     if device.type == 'cuda':
@@ -83,7 +87,7 @@ if __name__ == "__main__":
     max_length_token = df_temp['body'].map(lambda x: len(x)).max()
     df['body'] = df['body'].map(lambda x: x[:max_length_token])
 
-    # df = df[:100] # 실험을 위해 cut
+    # df = df[:10000] # 실험을 위해 cut
 
     # train, valid, test set으로 나누기
     train_df, temp_df = train_test_split(df, test_size=0.3, random_state=42)
@@ -108,7 +112,7 @@ if __name__ == "__main__":
     print(f"Starting training for LLM_name: {LLM_name}, use_lora: {use_lora}, LoRA layer: {lora_layer}, K: {K}, finetuning: {finetuning}, epochs: {epochs}, batch_size: {batch_size}, distance: {distance_name}, loss: {loss_name}, lr: {lr}, topk: {topk}")   
 
     # 모델 초기화
-    model = ContrastiveModel(LLM, tokenizer, use_lora=use_lora, max_length=max_length, K=K, lora_layer=lora_layer, finetuning=finetuning)
+    model = ContrastiveModel(LLM, tokenizer, use_lora=use_lora, max_length=max_length, K=K, lora_layer=lora_layer, finetuning=finetuning, freeze_layers=args.freeze_layers)
     model.summary()
     model.to(device)
     
@@ -328,9 +332,10 @@ if __name__ == "__main__":
         
             # if best_val_recall < avg_val_recall:
             #     best_val_recall = avg_val_recall
-            best_model_path = os.path.join(save_dir, f'best_model_{LLM_name}_{epoch}_{lr}_{batch_size}_{distance_name}.pth')
+            best_model_path = os.path.join(save_dir, f'best_model_{LLM_name}_{epoch}_{lr}_{batch_size}_{distance_name}_{args.freeze_layers}.pth')
             torch.save(model.state_dict(), best_model_path)
             print(f"Model saved at {best_model_path}")
+
 
             ## test 시작
             unique_keyword_embeddings = {}
@@ -360,6 +365,7 @@ if __name__ == "__main__":
                     keyword_embeddings.append(keyword_embedding)
                     # loss = loss_function(text_embedding, keyword_embedding, 1)
                     # total_val_loss += loss.item()
+
                     
                 ### distance 구하기
                 distance_list = []
@@ -406,12 +412,15 @@ if __name__ == "__main__":
                 #total_mrr += mrr
                 #total_hit += hit
                 #total_f1 += f1
-            
+
+                ranked_keyword_embeddings = [unique_keyword_embeddings[keyword].squeeze().cpu().numpy() for keyword in ranked_keywords]
+
                 # Save the embeddings and other information
                 test_embedding_result = {
                     'body': row['body'],
                     'body_embedding': text_embedding.squeeze().cpu().numpy(),
-                    'recommended_keywords': ranked_keywords
+                    'recommended_keywords': ranked_keywords,
+                    'keyword_embedding': ranked_keyword_embeddings
                 }
                 test_embedding_results.append(test_embedding_result)
                 
@@ -447,10 +456,11 @@ if __name__ == "__main__":
             test_precision_list.append(avg_test_precision)
 
             
-        test_results_path = os.path.join(result_dir, f'{LLM_name}_{use_lora}_{lr}_{epoch}_{distance_name}_{batch_size}_test_embedding_results.pkl')
+        test_results_path = os.path.join(embed_dir, f'{LLM_name}_{use_lora}_{lr}_{epoch}_{distance_name}_{batch_size}_{args.freeze_layers}_test_embedding_results.pkl')
         with open(test_results_path, 'wb') as f:
             pickle.dump(test_embedding_results, f)
         print(f"Test embedding results saved at {test_results_path}.")
+
 
     
 
@@ -478,10 +488,10 @@ if __name__ == "__main__":
             'batch_size': batch_size
         }
     
-        with open(result_dir+'/{}_{}_{}_{}_{}_valid.pkl'.format(LLM_name, epoch, lr, batch_size, distance_name), 'wb') as f:
-                pickle.dump(experiment_results, f)
-    
-        print(f"Evaluation Experiment results saved..")
+        with open(result_dir+f'/{LLM_name}_{epoch}_{lr}_{batch_size}_{distance_name}_{args.freeze_layers}_valid.pkl', 'wb') as f:
+            pickle.dump(experiment_results, f)
+        print(f"Validation Experiment results saved..")
+
     
         
         
@@ -503,11 +513,12 @@ if __name__ == "__main__":
             'avg_test_precision_5': test_precision_list_5,
             'avg_test_precision': test_precision_list}
         
-        with open(result_dir+'/{}_{}_{}_{}_{}_test.pkl'.format(LLM_name, epoch, lr, batch_size, distance_name), 'wb') as f:
-                pickle.dump(experiment_results, f)
+        with open(result_dir+f'/{LLM_name}_{epoch}_{lr}_{batch_size}_{distance_name}_{args.freeze_layers}_test.pkl', 'wb') as f:
+            pickle.dump(experiment_results, f)
+        print(f"Test Experiment results saved..")
+ 
         
         
         
         print(f"Experiment results saved..")
-
 
