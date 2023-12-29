@@ -38,7 +38,7 @@ def parse_args():
     parser.add_argument("--topk", default=10, type=int, help="Value for Recall@k")
     parser.add_argument("--LLM_name", default="bert-multilingual", type=str, help="Name of the LLM")
     parser.add_argument("--loss", default="contrastive", type=str, help="Loss function to use")
-    parser.add_argument("--distance", default="pairwise_distance", type=str, help="Distance function to use")
+    parser.add_argument("--distance", default="euclidean_distance", type=str, help="Distance function to use")
     parser.add_argument("--device", default="cuda:0", type=str, help="Device to run the model on. E.g., 'cuda:1' or 'cpu'")
     parser.add_argument("--save_dir", default="saved_models", type=str, help="Directory to save the model")
     parser.add_argument("--result_dir", default="results", type=str, help="Directory to save the results")
@@ -258,7 +258,7 @@ if __name__ == "__main__":
                     distance = distance_function(text_embedding, keyword_embedding)
                     distance_list.append(distance.item())
                 
-                if distance_name in ['pairwise_distance', 'euclidean_distance']:
+                if distance_name in ['euclidean_distance']:
                     sorted_indices = np.argsort(np.array(distance_list))
                 elif distance_name in ['cosine_similarity']:
                     sorted_indices = np.argsort(np.array(distance_list))
@@ -373,7 +373,7 @@ if __name__ == "__main__":
                     distance = distance_function(text_embedding, keyword_embedding)
                     distance_list.append(distance.item())
                 
-                if distance_name in ['pairwise_distance', 'euclidean_distance']:
+                if distance_name in ['euclidean_distance']:
                     sorted_indices = np.argsort(np.array(distance_list))
                 elif distance_name in ['cosine_similarity']:
                     sorted_indices = np.argsort(np.array(distance_list))
